@@ -124,26 +124,6 @@ namespace BLL.SQLProcessing
             return null;
 
         }
-        public float calculateProbabilisticInterpretationForRelationOnFuzzySetsExpression(string expression)
-        {
-            this.parser.parse(expression);
-            RelationOnFuzzySetExpressionData data = this.parser.relationOnFuzzySetsExpression();
-
-            if (this.preProcessor.checkSemanticRelationOnFuzzySetExpression(data))
-            {
-                return this.queryPlanner.calculateProbabilisticInterpretationForRelationOnFuzzySetsExpression(data);
-            }
-            return -1;
-        }
-        public TheoryCheckSelectPlan calculateProbabilisticInterpretationForSelectionExpressionOnSpecifiedTuples(string expression)
-        {
-            this.parser.parse(expression);
-            SelectionExpressionOnSpecifiedTuplesData data = this.parser.selectionExpressionOnSpecifiedTuples();
-            if (this.preProcessor.checkSemanticCalculateProbabilisticInterpretationForSelectionExpreesionOnSpecifiedTuples(data)){
-                return this.queryPlanner.createPlanForCalculatingProbabilisticInterpretationForSelectionOnSpeficifiedTuple(data);
-            }
-            return null;
-        }
 
     }
 }

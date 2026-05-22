@@ -701,87 +701,6 @@ namespace BLL.SQLProcessing
                 this.lexer.clearTokens();
             }
         }
-        public List<SelectField> selectList()
-        {
-            try
-            {
-                List<SelectField> ans = new List<SelectField>();
-                if (lexer.matchDelimiter("*"))
-                {
-                    lexer.eatDelimiter("*");
-                    return new List<SelectField> { new SelectField("", "*") };
-                }
-                else
-                {
-                    string str1 = lexer.eatIdentifier();
-                    string str2;
-                    if (lexer.matchDelimiter("."))
-                    {
-                        lexer.eatDelimiter(".");
-                        str2 = lexer.eatIdentifier();
-                        ans.Add(new SelectField(str1, str2));
-                    }
-                    else
-                        ans.Add(new SelectField("", str1));
-                    while (lexer.matchDelimiter(","))
-                    {
-                        lexer.eatDelimiter(",");
-                        str1 = lexer.eatIdentifier();
-                        if (lexer.matchDelimiter("."))
-                        {
-                            lexer.eatDelimiter(".");
-                            str2 = lexer.eatIdentifier();
-                            ans.Add(new SelectField(str1, str2));
-                        }
-                        else
-                            ans.Add(new SelectField("", str1));
-                    }
-                    return ans;
-                }
-            }
-            catch (MismatchTokenType ex)
-            {
-                throw createSQLSyntaxException("At select list position: " + ex.Message);
-            }
-        }
-        public object fromList()
-        {
-            try
-            {
-                List<string> relNames = new List<string>();
-                List<ProbabilisticCombinationStrategy> combinationStrategies = new List<ProbabilisticCombinationStrategy>();
-                relNames.Add(relation());
-
-                if (lexer.matchKeyword("NATURAL"))
-                {
-                    while (lexer.matchKeyword("NATURAL"))
-                    {
-                        lexer.eatKeyword("NATURAL");
-                        lexer.eatKeyword("JOIN");
-                        var combinationStrategy = ProbabilisticCombinationStrategyUtilities.convertStringToEnum(lexer.eatProbabilisticCombinationStrategy());
-                        if (!ProbabilisticCombinationStrategyUtilities.isConjunctionStategy(combinationStrategy))
-                            throw createSQLSyntaxException("NATUAL JOIN can only be paired with probabilistic conjunction strategy");
-                        combinationStrategies.Add(combinationStrategy);
-                        relNames.Add(relation());
-                    }
-                    return new NaturalJoinList(relNames, combinationStrategies);
-                }
-                else //if (lexer.matchDelimiter(","))
-                {
-                    while (lexer.matchDelimiter(","))
-                    {
-                        lexer.eatDelimiter(",");
-                        relNames.Add(relation());
-                    }
-                    return relNames;
-                }
-            }
-            catch (MismatchTokenType ex)
-            {
-                throw createSQLSyntaxException("At from list position: " + ex.Message);
-            }
-
-        }
         public SelectionExpression PrimarySelectionExpression()
         {
             try
@@ -1025,30 +944,20 @@ namespace BLL.SQLProcessing
             try
             {
                 QueryData ans;
-                if (lexer.matchDelimiter("("))
-                {
-                    lexer.eatDelimiter("(");
-                    ans = query(false);
-                    lexer.eatDelimiter(")");
-                    return ans;
-                }
-                else if (lexer.matchKeyword("SELECT"))
+                if (lexer.matchKeyword("SELECT"))
                 {
                     lexer.eatKeyword("SELECT");
-                    List<SelectField> selectFields = selectList();
+                    lexer.eatDelimiter("*");
+                    List<SelectField> selectFields= new List<SelectField> { new SelectField("", "*") };
                     lexer.eatKeyword("FROM");
-                    object from_list = fromList();
+                    object from_list = new List<string> {relation()};
                     SelectionCondition selectionCondt = null;
                     if (lexer.matchKeyword("WHERE"))
                     {
                         lexer.eatKeyword("WHERE");
                         selectionCondt = selectionCondition();
                     }
-                    if (from_list is List<string>)
-                        return new BaseCartesianProductQueryData(selectFields, (List<string>)from_list, selectionCondt);
-                    else
-                        return new BaseNaturalJoinQueryData(selectFields, (NaturalJoinList)from_list, selectionCondt);
-
+                    return new BaseCartesianProductQueryData(selectFields, (List<string>)from_list, selectionCondt);
                 }
                 else
                     throw createSQLSyntaxException("Not a query");
@@ -1058,84 +967,14 @@ namespace BLL.SQLProcessing
                 throw createSQLSyntaxException(ex.Message);
             }
         }
-        public QueryData INTERSECTIONQuery()
-        {
-            try
-            {
-                QueryData ans = PrimaryQuery();
-                QueryData next;
-                while (lexer.matchKeyword("INTERSECT"))
-                {
-                    lexer.eatKeyword("INTERSECT");
-                    string strProbCombStrategy = lexer.eatProbabilisticCombinationStrategy();
-                    ProbabilisticCombinationStrategy enumProbCombStrategy = ProbabilisticCombinationStrategyUtilities.convertStringToEnum(strProbCombStrategy);
-                    if (!ProbabilisticCombinationStrategyUtilities.isConjunctionStategy(enumProbCombStrategy))
-                        throw createSQLSyntaxException("INTERSECTION must be paired with probabilistic conjunction strategy");
-                    next = PrimaryQuery();
-                    ans = new CompoundQueryData(ans, next, SetConnective.INTERSECT, enumProbCombStrategy);
-                }
-                return ans;
-            }
-            catch (MismatchTokenType ex)
-            {
-                throw createSQLSyntaxException(ex.Message);
-            }
-        }
-        public QueryData UNION_EXCEPT_Query()
-        {
-            try
-            {
-                QueryData ans = INTERSECTIONQuery();
-                QueryData next;
-                bool isUNION;
-                while (lexer.matchKeyword("UNION") || lexer.matchKeyword("EXCEPT"))
-                {
-                    if (lexer.matchKeyword("UNION"))
-                    {
-                        lexer.eatKeyword("UNION");
-                        isUNION = true;
-                    }
-                    else
-                    {
-                        lexer.eatKeyword("EXCEPT");
-                        isUNION = false;
-                    }
-                    string strProbCombStrategy = lexer.eatProbabilisticCombinationStrategy();
-                    ProbabilisticCombinationStrategy enumProbCombStrategy = ProbabilisticCombinationStrategyUtilities.convertStringToEnum(strProbCombStrategy);
-                    if (isUNION && !ProbabilisticCombinationStrategyUtilities.isDisjunctionStategy(enumProbCombStrategy))
-                        throw createSQLSyntaxException("UNION must be paired with probabilistic disjunction strategy");
-                    else if (!isUNION && !ProbabilisticCombinationStrategyUtilities.isDifferenceStategy(enumProbCombStrategy))
-                        throw createSQLSyntaxException("EXCEPT must be paired with probabilistic difference strategy");
-                    next = INTERSECTIONQuery();
-                    ans = (isUNION) ?
-                        new CompoundQueryData(ans, next, SetConnective.UNION, enumProbCombStrategy)
-                        : new CompoundQueryData(ans, next, SetConnective.EXCEPT, enumProbCombStrategy);
-                }
-                return ans;
-            }
-            catch (MismatchTokenType ex)
-            {
-                throw createSQLSyntaxException(ex.Message);
-            }
-        }
         public QueryData query(bool isRootParsing)
         {
-            //try{
-            //    var data = UNION_EXCEPT_Query();
-
-            //    return data;
-            //}
-            //finally{
-
-            //    this.lexer.clearTokens();
-            //}
             try
             {
-                var data = UNION_EXCEPT_Query();
+                var data = PrimaryQuery();
 
                 if (isRootParsing && !this.lexer.isEndOfToken())
                     throw this.createSQLSyntaxException($"Extraneous input {this.lexer.getCurrentToken().Text}, expecting EOF");
-
                 return data;
             }
             catch (MismatchTokenType ex)
@@ -1166,71 +1005,6 @@ namespace BLL.SQLProcessing
             catch (MismatchTokenType ex)
             {
                 throw createSQLSyntaxException("At constant position:"+ex.Message);
-            }
-        }
-        public RelationOnFuzzySetExpressionData relationOnFuzzySetsExpression()
-        {
-            try
-            {
-                Constant fs1Name = getConstantFromLexer();
-
-                string strCompareOp = this.lexer.eatOperator();
-                CompareOperation compareOp = CompareOperatorUltilities.convertStringToEnum(strCompareOp);
-
-                Constant fs2Name = getConstantFromLexer();
-
-                if (!this.lexer.isEndOfToken())
-                    throw this.createSQLSyntaxException($"Extraneous input {this.lexer.getCurrentToken().Text}, expecting EOF");
-
-                return new RelationOnFuzzySetExpressionData(fs1Name, compareOp, fs2Name);
-            }
-            catch (MismatchTokenType ex)
-            {
-                throw createSQLSyntaxException(ex.Message);
-            }
-            finally
-            {
-                this.lexer.clearTokens();
-            }
-        }
-        public SelectionExpressionOnSpecifiedTuplesData selectionExpressionOnSpecifiedTuples()
-        {
-            try
-            {
-                SelectionExpression selectionExpression = this.selectionExpression();
-                lexer.eatKeyword("on");
-                string relation = lexer.eatIdentifier();
-                if (lexer.matchKeyword("from"))
-                {
-                    lexer.eatKeyword("from");
-                    object startIndex = lexer.eatNumberConstant();
-                    if (!(startIndex is int))
-                        throw new SemanticException("Number after keyword 'from' must be int");
-
-                    lexer.eatKeyword("take");
-                    object noNextTuples = lexer.eatNumberConstant();
-                    if (!(noNextTuples is int))
-                        throw new SemanticException("Number after keyword 'take' must be int");
-
-                    if (!this.lexer.isEndOfToken())
-                        throw this.createSQLSyntaxException($"Extraneous input {this.lexer.getCurrentToken().Text}, expecting EOF");
-
-                    return new SelectionExpressionOnSpecifiedTuplesData(relation, selectionExpression, (int)startIndex, (int)noNextTuples);
-                }
-                else
-                {
-                    if (!this.lexer.isEndOfToken())
-                        throw this.createSQLSyntaxException($"Extraneous input {this.lexer.getCurrentToken().Text}, expecting EOF");
-                    return new SelectionExpressionOnSpecifiedTuplesData(relation, selectionExpression);
-                }
-            }
-            catch (MismatchTokenType ex)
-            {
-                throw createSQLSyntaxException(ex.Message);
-            }
-            finally
-            {
-                this.lexer.clearTokens();
             }
         }
 
