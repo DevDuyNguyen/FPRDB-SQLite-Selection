@@ -87,15 +87,13 @@ namespace FPRDB_SQLite.GUI
             operatorRibbonPageGroup = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             excuteQueryribbonPageGroup = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             crudDatabaseQueryRibbonPageGroup = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
-            ribbonPageGroup1 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
-            barButtonItem1 = new DevExpress.XtraBars.BarButtonItem();
-            ribbonPageGroup2 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
-            barButtonItem2 = new DevExpress.XtraBars.BarButtonItem();
             pageFuzzySet = new DevExpress.XtraBars.Ribbon.RibbonPage();
             discreteFuzzySetribbonPageGroup = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             continuousFuzzySetRibbonPageGroup = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             SearchFuzzySetribbonPageGroup = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             ribbonStatusBar = new DevExpress.XtraBars.Ribbon.RibbonStatusBar();
+            barButtonItem1 = new DevExpress.XtraBars.BarButtonItem();
+            barButtonItem2 = new DevExpress.XtraBars.BarButtonItem();
             TreeView_imageList = new ImageList(components);
             RelationsplitContainerControl = new DevExpress.XtraEditors.SplitContainerControl();
             treeView = new TreeView();
@@ -382,7 +380,7 @@ namespace FPRDB_SQLite.GUI
             // 
             // iExcuteQuery
             // 
-            iExcuteQuery.Caption = "Excute Query";
+            iExcuteQuery.Caption = "Excute Statement";
             iExcuteQuery.Id = 47;
             iExcuteQuery.ImageOptions.LargeImage = (Image)resources.GetObject("iExcuteQuery.ImageOptions.LargeImage");
             iExcuteQuery.Name = "iExcuteQuery";
@@ -523,7 +521,7 @@ namespace FPRDB_SQLite.GUI
             // 
             // QueryRibbonPage
             // 
-            QueryRibbonPage.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] { fileQueryRibbonPageGroup, conjunctionRibbonPageGroup, disjunctionRibbonPageGroup, differenceRibbonPageGroup, operatorRibbonPageGroup, excuteQueryribbonPageGroup, crudDatabaseQueryRibbonPageGroup, ribbonPageGroup1, ribbonPageGroup2 });
+            QueryRibbonPage.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] { fileQueryRibbonPageGroup, conjunctionRibbonPageGroup, disjunctionRibbonPageGroup, differenceRibbonPageGroup, operatorRibbonPageGroup, excuteQueryribbonPageGroup, crudDatabaseQueryRibbonPageGroup });
             QueryRibbonPage.Name = "QueryRibbonPage";
             QueryRibbonPage.Text = "Query";
             // 
@@ -587,36 +585,6 @@ namespace FPRDB_SQLite.GUI
             crudDatabaseQueryRibbonPageGroup.Name = "crudDatabaseQueryRibbonPageGroup";
             crudDatabaseQueryRibbonPageGroup.Text = "Database Query";
             // 
-            // ribbonPageGroup1
-            // 
-            ribbonPageGroup1.AllowTextClipping = false;
-            ribbonPageGroup1.ItemLinks.Add(barButtonItem1);
-            ribbonPageGroup1.Name = "ribbonPageGroup1";
-            ribbonPageGroup1.Text = "Probabilistic Interpretation For Relation On Fuzzy Sets";
-            // 
-            // barButtonItem1
-            // 
-            barButtonItem1.Caption = "Calculate";
-            barButtonItem1.Id = 59;
-            barButtonItem1.ImageOptions.SvgImage = (DevExpress.Utils.Svg.SvgImage)resources.GetObject("barButtonItem1.ImageOptions.SvgImage");
-            barButtonItem1.Name = "barButtonItem1";
-            barButtonItem1.ItemClick += barButtonItem1_ItemClick;
-            // 
-            // ribbonPageGroup2
-            // 
-            ribbonPageGroup2.AllowTextClipping = false;
-            ribbonPageGroup2.ItemLinks.Add(barButtonItem2);
-            ribbonPageGroup2.Name = "ribbonPageGroup2";
-            ribbonPageGroup2.Text = "Probabilistic Interpretation For Selection Expression";
-            // 
-            // barButtonItem2
-            // 
-            barButtonItem2.Caption = "Calculate";
-            barButtonItem2.Id = 60;
-            barButtonItem2.ImageOptions.SvgImage = (DevExpress.Utils.Svg.SvgImage)resources.GetObject("barButtonItem2.ImageOptions.SvgImage");
-            barButtonItem2.Name = "barButtonItem2";
-            barButtonItem2.ItemClick += barButtonItem2_ItemClick;
-            // 
             // pageFuzzySet
             // 
             pageFuzzySet.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] { discreteFuzzySetribbonPageGroup, continuousFuzzySetRibbonPageGroup, SearchFuzzySetribbonPageGroup });
@@ -654,6 +622,14 @@ namespace FPRDB_SQLite.GUI
             ribbonStatusBar.Name = "ribbonStatusBar";
             ribbonStatusBar.Ribbon = ribbonControl;
             ribbonStatusBar.Size = new Size(970, 30);
+            // 
+            // barButtonItem1
+            // 
+            barButtonItem1.Name = "barButtonItem1";
+            // 
+            // barButtonItem2
+            // 
+            barButtonItem2.Name = "barButtonItem2";
             // 
             // TreeView_imageList
             // 
@@ -1131,9 +1107,7 @@ namespace FPRDB_SQLite.GUI
         private DevExpress.XtraBars.BarButtonItem barButtonSaveInDB;
         private DevExpress.XtraBars.BarButtonItem barButtonDeleteInDB;
         private DevExpress.XtraBars.BarButtonItem barButtonItem1;
-        private DevExpress.XtraBars.Ribbon.RibbonPageGroup ribbonPageGroup1;
         private DevExpress.XtraBars.BarButtonItem barButtonItem2;
-        private DevExpress.XtraBars.Ribbon.RibbonPageGroup ribbonPageGroup2;
     }
 }
 
